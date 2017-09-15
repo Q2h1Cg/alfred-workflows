@@ -61,7 +61,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/local/bin/supervisorctl -c /usr/local/etc/supervisord.ini restart fakeSkylar &gt; /tmp/log</string>
+				<string>/usr/local/bin/supervisorctl -c /usr/local/etc/supervisord.ini restart fakeSkylar</string>
 				<key>scriptargtype</key>
 				<integer>1</integer>
 				<key>scriptfile</key>

@@ -10,10 +10,10 @@ def lookup(ip):
     addr = u""
     headers = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
-        "Referer": "http://www.ipip.net/"
+        "Referer": "https://www.ipip.net/"
     }
     
-    resp = web.post("http://www.ipip.net/ip.html", data={"ip":ip}, headers=headers, timeout=3)
+    resp = web.post("https://www.ipip.net/ip.html", data={"ip":ip}, headers=headers, timeout=3)
     resp.raise_for_status()
     match = re.search(r'<span style="color: rgb\(243, 102, 102\);">(\S+?)</span>[\s\S]*?<div><span id="myself">([\s\S]*?)</span>', resp.text)
     if match:

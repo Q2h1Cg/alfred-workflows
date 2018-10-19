@@ -2,34 +2,44 @@
 
 import re
 import sys
+from collections import OrderedDict
 
 from workflow import Workflow, web
 
+patterns = OrderedDict([
+    [u'IP', u'<input type="text" name="ip" value="(\S+?)"'],
+    [u'运营商', u'<td>运营商</td>[\s\S]+?line-height: 46px;">(\S+?)</span>'],
+    [u'地理位置', u'<td>地理位置</td>[\s\S]+?height: 46px;">(\S+?)</span>'],
+    [u'高精度地理位置', u'国内高精度</span></th>[\s\S]+?line-height: 46px;">(\S+?)<span style'],
+])
+
 
 def lookup(ip):
-    addr = u""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
-        "Referer": "https://www.ipip.net/"
-    }
-    
-    resp = web.post("https://www.ipip.net/ip.html", data={"ip":ip}, headers=headers, timeout=3)
+    resp = web.post(
+        'https://www.ipip.net/ip.html',
+        data={'ip': ip},
+        headers={'Referer': 'https://www.ipip.net/'},
+        timeout=3
+    )
     resp.raise_for_status()
-    match = re.search(r'<span style="color: rgb\(243, 102, 102\);">(\S+?)</span>[\s\S]*?<div><span id="myself">([\s\S]*?)</span>', resp.text)
-    if match:
-        ip, addr = match.group(1), match.group(2).strip().replace(u"  ", u" ")
-    
-    return ip, addr
+
+    info = OrderedDict()
+    for key, pattern in patterns.items():
+        results = re.findall(pattern, resp.text)
+        info[key] = results[0] if results else u''
+
+    return info
 
 
 def main(wf):
-    ip = "" if not wf.args else wf.args[0]
-    ip, addr = lookup(ip)
-    txt = ip + u"\n" + addr
-    wf.add_item(title=ip, subtitle=addr, valid=True, arg=txt)
+    ip = wf.args[0] if wf.args else ''
+    info = lookup(ip)
+    subtitle = u' - '.join([value for value in info.values() if value])
+    text = u'\n'.join([key + u'：' + value for key, value in info.items() if value])
+    wf.add_item(valid=True, title=info['IP'], subtitle=subtitle, arg=text)
     wf.send_feedback()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     wf = Workflow()
     sys.exit(wf.run(main))
